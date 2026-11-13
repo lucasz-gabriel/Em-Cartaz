@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+posters/
+title.basics.tsv.gz
+filmes_cache.csv
+relatorio_vendas.csv
+ 
+
+.idea/

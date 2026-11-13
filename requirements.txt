@@ -1,0 +1,6 @@
+pandas>=1.5
+requests
+beautifulsoup4
+lxml
+pillow
+ 
