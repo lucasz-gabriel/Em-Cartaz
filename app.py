@@ -95,6 +95,5 @@ class App(tk.Tk):
         self.clientes.append(cliente)
         self.atualizar_tudo()
 
-
 if __name__ == "__main__":
     App().mainloop()

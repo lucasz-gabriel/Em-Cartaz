@@ -12,6 +12,7 @@ from tema import (FUNDO, DESTAQUE, TEXTO, TEXTO_SUAVE, FONTE_NEGRITO, FONTE_PEQU
 
 class TelaIngressos(Tela):
     FILEIRAS, COLUNAS = "ABCDEFGH", 10
+    PRECO_PADRAO=30.0
     # proporções do mapa em relação ao tamanho da cadeira (t)
     ESPACO_REL, CORREDOR_REL, MARGEM_REL, TOPO_REL = 0.2, 0.9, 1.0, 1.9
     TAMANHO_MIN, TAMANHO_MAX = 14, 44      # limites do tamanho da cadeira, em pixels
@@ -75,8 +76,12 @@ class TelaIngressos(Tela):
 
     def _ao_trocar_sessao(self):
         indice = self.combo_sessao.current()
-        self.preco = self.app.sessoes[indice]["preco"] if indice >= 0 else 0.0
+        self.preco = self.app.sessoes[indice].get("preco", self.PRECO_PADRAO) if indice >= 0 else 0.0
         self.limpar_selecao()
+
+    def _limite(self):
+        indice = self.combo_sessao.current()
+        return self.app.sessoes[indice]["lugares"] if indice >= 0 else 0
 
     # --- mapa de cadeiras (escalável)
     def _ao_redimensionar(self, e):
@@ -154,6 +159,10 @@ class TelaIngressos(Tela):
         item = self.canvas.find_withtag("current")[0]
         rotulo = self.itens[item]
         if rotulo in self.ocupadas:
+            return
+        if rotulo not in self.selecionadas and len(self.selecionadas) >= self._limite():
+            messagebox.showinfo("Comprar ingresso",
+                                f"Esta sessão permite escolher até {self._limite()} cadeira(s).")
             return
         self.selecionadas.symmetric_difference_update({rotulo})
         self.canvas.itemconfig(item, fill=self._cor(rotulo))
