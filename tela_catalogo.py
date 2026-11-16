@@ -6,6 +6,26 @@ from componentes import Tela, Botao
 from janela_novo_filme import JanelaNovoFilme
 from tema import FUNDO, TEXTO, TEXTO_SUAVE, FONTE, FONTE_NEGRITO, FONTE_PEQUENA
 
+try:
+    from PIL import Image, ImageOps, ImageTk
+except ImportError:            # sem Pillow os cartões mostram só o placeholder "Pôster"
+    Image = None
+
+_cache_posters = {}            # caminho -> ((largura, altura), PhotoImage)
+
+
+def carregar_poster(caminho, largura, altura):
+    """PhotoImage do pôster, recortado e redimensionado para o cartão (com cache)."""
+    guardado = _cache_posters.get(caminho)
+    if guardado and guardado[0] == (largura, altura):
+        return guardado[1]
+    with Image.open(caminho) as original:
+        imagem = ImageOps.fit(original.convert("RGB"), (largura, altura),
+                              getattr(Image, "Resampling", Image).LANCZOS)
+    foto = ImageTk.PhotoImage(imagem)
+    _cache_posters[caminho] = ((largura, altura), foto)
+    return foto
+
 
 class CartaoPoster(tk.Frame):
     PROPORCAO = 215 / 150          # altura / largura do pôster
@@ -16,15 +36,23 @@ class CartaoPoster(tk.Frame):
         quadro = tk.Canvas(self, width=largura, height=altura, bg=filme["cor"],
                            highlightthickness=0)
         quadro.pack()
-        if filme.get("imagem") is not None:       # PhotoImage do pôster (futuro)
-            quadro.create_image(largura / 2, altura / 2, image=filme["imagem"], anchor="center")
-            quadro.imagem = filme["imagem"]        # evita o garbage collector
+        foto = None
+        caminho = filme.get("imagem")              # caminho do arquivo em posters/ (ou None)
+        if caminho and Image is not None:
+            try:
+                foto = carregar_poster(caminho, largura, altura)
+            except (OSError, ValueError):          # arquivo sumiu ou não é uma imagem
+                foto = None
+        if foto is not None:
+            quadro.create_image(0, 0, image=foto, anchor="nw")
+            quadro.imagem = foto                   # evita o garbage collector
         else:
             quadro.create_text(largura / 2, altura / 2, text="Pôster", fill=TEXTO, font=FONTE)
         tk.Label(self, text=filme["titulo"], bg=FUNDO, fg=TEXTO, font=FONTE_NEGRITO,
                  anchor="w", justify="left", wraplength=largura).pack(fill="x", pady=(6, 0))
         tk.Label(self, text=f'{filme["genero"]} • {filme["duracao"]} min', bg=FUNDO,
-                 fg=TEXTO_SUAVE, font=FONTE_PEQUENA, anchor="w").pack(fill="x")
+                 fg=TEXTO_SUAVE, font=FONTE_PEQUENA, anchor="w", justify="left",
+                 wraplength=largura).pack(fill="x")
 
 
 class TelaCatalogo(Tela):

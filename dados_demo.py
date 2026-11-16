@@ -13,10 +13,10 @@ FILMES_DEMO = [
 ]
 
 SESSOES_DEMO = [
-    {"filme": "Avatar", "horario": "14:00", "sala": "1", "preco": 30.0, "lugares": 50},
-    {"filme": "Titanic", "horario": "16:30", "sala": "2", "preco": 25.0, "lugares": 40},
-    {"filme": "Duna: Parte 2", "horario": "19:00", "sala": "3", "preco": 32.0, "lugares": 60},
-    {"filme": "Barbie", "horario": "21:30", "sala": "2", "preco": 28.0, "lugares": 40},
+    {"filme": "Avatar", "horario": "14:00", "sala": "1", "preco": 10.0, "lugares": 5},
+    {"filme": "Titanic", "horario": "16:30", "sala": "2", "preco": 10.0, "lugares": 4},
+    {"filme": "Duna: Parte 2", "horario": "19:00", "sala": "3", "preco": 10.0, "lugares": 6},
+    {"filme": "Barbie", "horario": "21:30", "sala": "2", "preco": 10.0, "lugares": 3},
 ]
 
 CLIENTES_DEMO = [
