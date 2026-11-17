@@ -6,6 +6,8 @@ Rodar: python app.py
 """
 import tkinter as tk
 from tkinter import ttk
+import queue
+import threading
 
 from dados_demo import FILMES_DEMO, SESSOES_DEMO, CLIENTES_DEMO
 from tela_catalogo import TelaCatalogo
@@ -14,7 +16,7 @@ from tela_ingressos import TelaIngressos
 from tela_menu import TelaMenu
 from tela_sessoes import TelaSessoes
 from tema import (FUNDO, SUPERFICIE, BORDA, DESTAQUE, TEXTO, FONTE, FONTE_NEGRITO)
-
+from raspador import buscar_poster
 
 class App(tk.Tk):
     def __init__(self):
@@ -48,6 +50,7 @@ class App(tk.Tk):
             tela.grid(row=0, column=0, sticky="nsew")
         self.atualizar_tudo()
         self.mostrar("menu")
+        self._baixar_posters_demo()
 
     def _configurar_estilo(self):
         estilo = ttk.Style(self)
@@ -87,6 +90,12 @@ class App(tk.Tk):
         self.filmes.append(filme)
         self.atualizar_tudo()
 
+    def remover_filme(self, titulo):
+        # TODO(backend): DELETE no banco (o cascade já apaga as sessões)
+        self.filmes = [f for f in self.filmes if f["titulo"] != titulo]
+        self.sessoes = [s for s in self.sessoes if s["filme"] != titulo]
+        self.atualizar_tudo()
+
     def adicionar_sessao(self, sessao):
         self.sessoes.append(sessao)
         self.atualizar_tudo()
@@ -94,6 +103,44 @@ class App(tk.Tk):
     def adicionar_cliente(self, cliente):
         self.clientes.append(cliente)
         self.atualizar_tudo()
+
+    def _baixar_posters_demo(self):
+        pendentes = [f["titulo"] for f in self.filmes if not f.get("imagem")]
+        if not pendentes:
+            return
+        self._fila_posters = queue.Queue()
+
+        def tarefa():                      # roda na thread: não mexe em widgets
+            for titulo in pendentes:
+                try:
+                    self._fila_posters.put((titulo, buscar_poster(titulo)["poster"]))
+                except Exception:          # sem internet ou filme não achado: segue sem pôster
+                    pass
+            self._fila_posters.put(None)   # sinal de fim
+
+        threading.Thread(target=tarefa, daemon=True).start()
+        self.after(300, self._checar_posters)
+
+    def _checar_posters(self):
+        terminou, mudou = False, False
+        try:
+            while True:
+                item = self._fila_posters.get_nowait()
+                if item is None:
+                    terminou = True
+                    break
+                titulo, caminho = item
+                for f in self.filmes:
+                    if f["titulo"] == titulo:
+                        f["imagem"] = caminho
+                        mudou = True
+        except queue.Empty:
+            pass
+        if mudou:
+            self.telas["catalogo"].atualizar()
+        if not terminou:
+            self.after(500, self._checar_posters)
+    
 
 if __name__ == "__main__":
     App().mainloop()
