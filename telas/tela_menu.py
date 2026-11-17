@@ -10,7 +10,7 @@ class TelaMenu(Tela):
         super().__init__(app)
         caixa = tk.Frame(self, bg=FUNDO)
         caixa.place(relx=0.5, rely=0.45, anchor="center")
-        tk.Label(caixa, text="Cinema", bg=FUNDO, fg=DESTAQUE,
+        tk.Label(caixa, text="Em cartaz", bg=FUNDO, fg=DESTAQUE,
                  font=("Segoe UI", 32, "bold")).pack(pady=(0, 28))
         for texto, destino in [("Filmes", "catalogo"), ("Sessões", "sessoes"),
                                ("Clientes", "clientes"), ("Comprar ingresso", "ingressos")]:
