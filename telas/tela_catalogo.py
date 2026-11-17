@@ -4,7 +4,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 
 from componentes import Tela, Botao, campo_texto
-from janela_novo_filme import JanelaNovoFilme
+from janelas.janela_novo_filme import JanelaNovoFilme
 from tema import FUNDO, TEXTO, TEXTO_SUAVE, FONTE, FONTE_NEGRITO, FONTE_PEQUENA, CADEIRA_OCUPADA
 
 try:
@@ -19,15 +19,14 @@ def facilitador(texto):
     return "".join(c for c in unicodedata.normalize("NFD", texto.lower())
                    if unicodedata.category(c) != "Mn")
 
-def carregar_poster(caminho, largura, altura):
-    """PhotoImage do pôster, recortado e redimensionado para o cartão (com cache)."""
+def carregar_poster(caminho, largura, altura, master):
     guardado = _cache_posters.get(caminho)
     if guardado and guardado[0] == (largura, altura):
         return guardado[1]
     with Image.open(caminho) as original:
         imagem = ImageOps.fit(original.convert("RGB"), (largura, altura),
                               getattr(Image, "Resampling", Image).LANCZOS)
-    foto = ImageTk.PhotoImage(imagem)
+    foto = ImageTk.PhotoImage(imagem, master=master)
     _cache_posters[caminho] = ((largura, altura), foto)
     return foto
 
@@ -45,7 +44,7 @@ class CartaoPoster(tk.Frame):
         caminho = filme.get("imagem")              # caminho do arquivo em posters/ (ou None)
         if caminho and Image is not None:
             try:
-                foto = carregar_poster(caminho, largura, altura)
+                foto = carregar_poster(caminho, largura, altura, master=self)
             except (OSError, ValueError):          # arquivo sumiu ou não é uma imagem
                 foto = None
         if foto is not None:

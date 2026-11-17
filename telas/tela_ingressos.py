@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 from componentes import Tela, Botao, campo_com_rotulo
 from dados_demo import CADEIRAS_OCUPADAS_DEMO
-from janela_relatorio import JanelaRelatorio
+from janelas.janela_relatorio import JanelaRelatorio
 from tema import (FUNDO, DESTAQUE, TEXTO, TEXTO_SUAVE, FONTE_NEGRITO, FONTE_PEQUENA,
                   CADEIRA_LIVRE, CADEIRA_OCUPADA, brl)
 
@@ -19,10 +19,6 @@ class TelaIngressos(Tela):
 
     def __init__(self, app):
         super().__init__(app)
-        # cadeiras ocupadas de cada sessão: {"Avatar - 14:00 - Sala 1": {"A3", "A5"}}
-        # TODO(backend): vem dos ingressos gravados de cada sessão
-        self.ocupadas_por_sessao = {}
-        self._semeado = False
         self.selecionadas = set()
         self.preco = 0.0                               # preço da sessão escolhida
         self._tamanho_canvas = (0, 0)
@@ -71,9 +67,12 @@ class TelaIngressos(Tela):
 
     @property
     def ocupadas(self):
-        """Cadeiras ocupadas da sessão escolhida (conjunto próprio de cada sessão)."""
-        return self.ocupadas_por_sessao.setdefault(self.combo_sessao.get(), set())
-
+        """Cadeiras já vendidas da sessão escolhida (vêm do banco, via app)."""
+        i = self.combo_sessao.current()
+        if i < 0:
+            return set()
+        return self.app.ocupadas.get(self.app.sessoes[i]["id"], set())
+    
     def _ao_trocar_sessao(self):
         indice = self.combo_sessao.current()
         self.preco = self.app.sessoes[indice].get("preco", self.PRECO_PADRAO) if indice >= 0 else 0.0
@@ -179,23 +178,25 @@ class TelaIngressos(Tela):
         self._atualizar_resumo()
 
     def ao_comprar(self):
-        if self.combo_sessao.current() < 0:
+        i, j = self.combo_sessao.current(), self.combo_cliente.current()
+        if i < 0:
             messagebox.showwarning("Comprar ingresso", "Escolha uma sessão.")
+            return
+        if j < 0:
+            messagebox.showwarning("Comprar ingresso", "Escolha o cliente.")
             return
         if not self.selecionadas:
             messagebox.showwarning("Comprar ingresso", "Selecione ao menos uma cadeira.")
             return
-        # TODO(backend): gravar ingressos (cliente + sessão + cadeiras)
-        self.app.ingressos_vendidos += len(self.selecionadas)
-        self.ocupadas.update(self.selecionadas)
+        self.app.comprar_ingressos(self.app.clientes[j]["id"], self.app.sessoes[i]["id"],
+                                   sorted(self.selecionadas))
         self.limpar_selecao()
-        self.app.atualizar_tudo()
 
     def atualizar(self):
         self.combo_cliente["values"] = [c["nome"] for c in self.app.clientes]
         self.combo_sessao["values"] = [self._rotulo_sessao(s) for s in self.app.sessoes]
-        if not self._semeado and self.app.sessoes:
-            # só para a demo: a primeira sessão já começa com algumas cadeiras ocupadas
-            primeira = self._rotulo_sessao(self.app.sessoes[0])
-            self.ocupadas_por_sessao[primeira] = set(CADEIRAS_OCUPADAS_DEMO)
-            self._semeado = True
+        if self.combo_sessao.current() < 0:      # a sessão escolhida deixou de existir
+            self.combo_sessao.set("")
+        if self.combo_cliente.current() < 0:
+            self.combo_cliente.set("")
+        self._desenhar()
