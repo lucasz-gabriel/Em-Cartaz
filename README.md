@@ -144,7 +144,7 @@ Em-Cartaz/
 
 ## 👨‍💻 Equipe
 
-Projeto da disciplina de programação, desenvolvido por:
+Projeto da disciplina de PARADGMA DE LINGUAGEM DE PROGRAMAÇÃO EM PYTHON, desenvolvido por:
 
 - **Lucas Roque** ([@lucasz-gabriel](https://github.com/lucasz-gabriel))
 - **Italo Pereira** ([@Italo-P](https://github.com/Italo-P))
