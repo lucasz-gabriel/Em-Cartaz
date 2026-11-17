@@ -1,4 +1,4 @@
-# 🎬 Sistema de Cinema
+# 🎬 Em Cartaz
 
 Sistema de gerenciamento de cinema com interface gráfica, feito em **Python** com **Tkinter**.
 Mostra os filmes em cartaz com pôsteres, cadastra sessões e clientes e vende ingressos com **escolha de cadeiras**. Tudo fica salvo em um banco **SQLite** (via **SQLAlchemy**), e o relatório de vendas é gerado com **pandas**.
@@ -8,7 +8,7 @@ Mostra os filmes em cartaz com pôsteres, cadastra sessões e clientes e vende i
 ## ✨ Funcionalidades
 
 - 🎞️ **Em cartaz**: catálogo de filmes em grade, com pôster, gênero e duração
-- 🔎 **Busca de pôster na web**: ao cadastrar um filme, o sistema busca o pôster na Wikipédia (web scraping)
+- 🔎 **Pôsteres da web (web scraping)**: ao cadastrar um filme, o botão "Buscar pôster" traz o cartaz da Wikipédia. Ao abrir o programa, os filmes que ainda não têm pôster são buscados em segundo plano, sem travar a janela
 - 🕒 **Sessões**: horário, sala e quantidade de lugares, ligadas a um filme
 - 👤 **Clientes**: cadastro com nome e e-mail, mostrando ingressos comprados e total gasto
 - 🎟️ **Compra de ingressos com mapa de cadeiras**: cadeiras livres, ocupadas e selecionadas, com limite de cadeiras por sessão
@@ -51,7 +51,7 @@ Filme ──< Sessao ──< Ingresso >── Cliente
 
 A tabela `ingressos` tem uma restrição de unicidade em `(sessao_id, cadeira)`: o próprio banco impede vender a mesma cadeira duas vezes na mesma sessão.
 
-Dentro do programa, os dados são carregados em listas de dicionários, e as telas os mostram em tabelas (como uma planilha).
+Dentro do programa, os dados são carregados em listas de dicionários, e as telas os mostram em tabelas (como uma planilha). Na tela de compra, a sessão escolhida no combo aponta para a mesma posição da lista de sessões, e dali saem o preço, o limite de cadeiras e as cadeiras já ocupadas.
 
 ---
 
@@ -62,7 +62,7 @@ Dentro do programa, os dados são carregados em listas de dicionários, e as tel
 | Dados em listas relacionadas | `app.py` (`filmes`, `sessoes`, `clientes`, `ocupadas`) e as chaves estrangeiras em `database/models.py` |
 | Tabela estilo Excel | `componentes.py` (`criar_tabela`, `preencher_tabela`), usada em Sessões, Clientes e Relatório |
 | **pandas** | `database/repositorio.py` (`relatorio_df`: `read_sql` + `groupby`) e `janelas/janela_relatorio.py` (exportação para CSV) |
-| **Web scraping** | `raspador.py` (busca do pôster na Wikipédia), usado em `janelas/janela_novo_filme.py` e no `app.py` |
+| **Web scraping** | `raspador.py`: busca o pôster na Wikipédia em português (API + BeautifulSoup), usado na janela de novo filme e no `app.py` |
 | **Banco de dados (ORM)** | `database/connection.py`, `database/models.py` e `database/repositorio.py` (SQLAlchemy + SQLite) |
 | Interface gráfica | `telas/`, `janelas/`, `componentes.py` e `tema.py` (Tkinter) |
 
@@ -78,8 +78,8 @@ Dentro do programa, os dados são carregados em listas de dicionários, e as tel
 
 ```bash
 # 1. Clonar o repositório
-git clone https://github.com/lucasz-gabriel/Projeto-Manfrine.git
-cd Projeto-Manfrine
+git clone https://github.com/lucasz-gabriel/Em-Cartaz.git
+cd Em-Cartaz
 
 # 2. Criar e ativar o ambiente virtual
 python -m venv .venv
@@ -95,6 +95,8 @@ python app.py
 
 Na primeira execução, o arquivo `cinema.db` é criado sozinho e já vem com filmes, sessões e clientes de demonstração. Para voltar ao estado inicial, feche o programa e apague o `cinema.db`.
 
+> Os pôsteres precisam de internet. Sem ela, o programa abre normalmente, só que sem os pôsteres novos.
+>
 > No Linux, se aparecer erro de Tkinter, instale com: `sudo apt install python3-tk`
 
 ---
@@ -102,7 +104,7 @@ Na primeira execução, o arquivo `cinema.db` é criado sozinho e já vem com fi
 ## 📁 Estrutura do projeto
 
 ```
-Projeto-Manfrine/
+Em-Cartaz/
 ├── app.py                  # janela principal e ligação entre telas e banco
 ├── componentes.py          # botão, campos, tabela e classe base das telas
 ├── tema.py                 # cores e fontes (tema escuro)
@@ -133,28 +135,17 @@ Projeto-Manfrine/
 - **Tkinter / ttk**: interface gráfica
 - **SQLite + SQLAlchemy**: banco de dados e ORM
 - **pandas**: relatório de vendas e exportação em CSV
-- **requests + BeautifulSoup**: web scraping
-- **Pillow**: exibição dos pôsteres
+- **requests + BeautifulSoup**: web scraping (API da Wikipédia e leitura da infocaixa do filme)
+- **Pillow**: exibição e redimensionamento dos pôsteres
 - **Git / GitHub**: versionamento e trabalho em equipe (branches)
 - **Figma**: protótipo das telas
 
 ---
 
-## 🔮 Melhorias futuras
-
-- [ ] Editar e excluir sessões e clientes
-- [ ] Calendário de datas nas sessões
-- [ ] Preço diferente por sessão
-- [ ] Login de cliente
-- [ ] Integração com a API do TMDB para dados e pôsteres
-
----
-
 ## 👨‍💻 Equipe
-Lucas Roque 
-Ítalo Pereira
-Paulo Gabriel
 
-- **Lucas** ([@lucasz-gabriel](https://github.com/lucasz-gabriel)): banco de dados, relatório e integração
-- **Ítalo** ([@Italo-P](https://github.com/Italo-P)): telas e web scraping
-- *demais integrantes*
+Projeto da disciplina de programação, desenvolvido por:
+
+- **Lucas Roque** ([@lucasz-gabriel](https://github.com/lucasz-gabriel))
+- **Italo Pereira** ([@Italo-P](https://github.com/Italo-P))
+- **Paulo Gabriel**
