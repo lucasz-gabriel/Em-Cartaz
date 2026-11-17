@@ -1,5 +1,5 @@
-pandas>=1.5
+pandas
+sqlalchemy
 requests
 beautifulsoup4
-lxml
 pillow
